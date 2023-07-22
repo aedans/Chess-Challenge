@@ -4,7 +4,15 @@ using System.Linq;
 
 public class MyBot : IChessBot
 {
-  int[] pieceValues = { 0, 100, 300, 300, 500, 900, 10000 };
+  int[] pieceValues = { 0, 100, 300, 300, 500, 900 };
+  ulong[][] pieceScoreboards = new ulong[][]{
+    null,
+    new ulong[] { 0x0000000000000000, 0x1223322123344332, 0x3445544345566554, 0x56677665ffffffff },
+    new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
+    new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
+    new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
+    new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
+  };
 
   public Move Think(Board board, Timer timer)
   {
@@ -41,14 +49,14 @@ public class MyBot : IChessBot
 
   public int Score(Board board)
   {
-    if (board.IsInCheckmate())
-    {
-      return -9999;
-    }
-
     if (board.IsDraw())
     {
       return 0;
+    }
+
+    if (board.IsInCheckmate())
+    {
+      return -99999;
     }
 
     return PieceScores(board, board.IsWhiteToMove) - PieceScores(board, !board.IsWhiteToMove);
@@ -57,6 +65,19 @@ public class MyBot : IChessBot
   public int PieceScores(Board board, bool white)
   {
     return new PieceType[] { PieceType.Pawn, PieceType.Knight, PieceType.Bishop, PieceType.Rook, PieceType.Queen }
-      .Sum(type => board.GetPieceList(type, white).Count * pieceValues[(int)type]);
+      .Sum(type => board.GetPieceList(type, white).Sum(piece => GetPieceScore(piece)));
+  }
+
+  public int GetPieceScore(Piece piece)
+  {
+    var index = piece.Square.Index;
+    if (!piece.IsWhite)
+    {
+      index = 63 - index;
+    }
+
+    var offset = 60 - (index % 16) * 4;
+    var value = (pieceScoreboards[(int)piece.PieceType][index / 16] & (0xful << offset)) >> offset;
+    return (int)(pieceValues[(int)piece.PieceType] * (1 + value * .1));
   }
 }
