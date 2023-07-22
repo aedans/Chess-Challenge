@@ -1,8 +1,8 @@
-﻿using ChessChallenge.API;
+using ChessChallenge.API;
 using System;
 using System.Linq;
 
-public class MyBot2 : IChessBot
+public class MyBot : IChessBot
 {
   int[] pieceValues = { 0, 100, 300, 300, 500, 900 };
   ulong[][] pieceScoreboards = new ulong[][]{
