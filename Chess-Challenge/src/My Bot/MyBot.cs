@@ -29,7 +29,7 @@ public class MyBot : IChessBot
     }
 
     var bestMove = moves[0];
-    var value = -999999;
+    var value = -99999;
     foreach (var move in moves)
     {
       board.MakeMove(move);
