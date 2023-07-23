@@ -2,7 +2,7 @@ using ChessChallenge.API;
 using System;
 using System.Linq;
 
-public class MyBot : IChessBot
+public class MyBot2 : IChessBot
 {
   int[] pieceValues = { 0, 100, 300, 300, 500, 900 };
   ulong[][] pieceScoreboards = new ulong[][]{
