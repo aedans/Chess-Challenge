@@ -1,4 +1,5 @@
 using ChessChallenge.API;
+using System;
 using System.Linq;
 
 public class MyBot3 : IChessBot
@@ -14,7 +15,7 @@ public class MyBot3 : IChessBot
 
   public Move Think(Board board, Timer timer)
   {
-    return ScoreMove(board, 4, -99999, 99999).Item2;
+    return ScoreMove(board, 3, -99999, 99999).Item2;
   }
 
   public (int, Move) ScoreMove(Board board, int depth, int alpha, int beta)
@@ -23,32 +24,31 @@ public class MyBot3 : IChessBot
 
     if (depth == 0 || moves.Count() == 0)
     {
-      alpha = Score(board);
-      return (alpha, Move.NullMove);
+      return (Score(board), Move.NullMove);
     }
 
     var bestMove = moves[0];
+    var value = -999999;
     foreach (var move in moves)
     {
       board.MakeMove(move);
       var (eval, _) = ScoreMove(board, depth - 1, -beta, -alpha);
       board.UndoMove(move);
 
-      eval = -eval;
-      if (eval >= beta)
+      if (-eval > value)
       {
-        alpha = beta;
-        break;
+        value = -eval;
+        bestMove = move;
       }
 
-      if (eval > alpha)
+      alpha = Math.Max(alpha, value);
+      if (alpha >= beta)
       {
-        alpha = eval;
-        bestMove = move;
+        break;
       }
     }
 
-    return (alpha, bestMove);
+    return (value, bestMove);
   }
 
   public int Score(Board board)
