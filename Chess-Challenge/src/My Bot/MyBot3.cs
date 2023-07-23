@@ -32,6 +32,12 @@ public class MyBot3 : IChessBot
     foreach (var move in moves)
     {
       board.MakeMove(move);
+
+      if (board.IsDraw()) {
+        board.UndoMove(move);
+        continue;
+      }
+
       var (eval, _) = ScoreMove(board, depth - 1, -beta, -alpha);
       board.UndoMove(move);
 
