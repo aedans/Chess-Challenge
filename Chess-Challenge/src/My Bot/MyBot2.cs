@@ -6,7 +6,6 @@ public class MyBot2 : IChessBot
 {
   int[] pieceValues = { 0, 100, 300, 300, 500, 900 };
   ulong[][] pieceScoreboards = new ulong[][]{
-    null,
     new ulong[] { 0x0000000000000000, 0x1223322123344332, 0x3445544345566554, 0x56677665ffffffff },
     new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
     new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
@@ -77,7 +76,7 @@ public class MyBot2 : IChessBot
     }
 
     var offset = 60 - (index % 16) * 4;
-    var value = (pieceScoreboards[(int)piece.PieceType][index / 16] & (0xful << offset)) >> offset;
+    var value = (pieceScoreboards[(int)piece.PieceType - 1][index / 16] & (0xful << offset)) >> offset;
     return (int)(pieceValues[(int)piece.PieceType] * (1 + value * .1));
   }
 }
