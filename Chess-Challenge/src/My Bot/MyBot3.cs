@@ -1,9 +1,7 @@
-﻿using ChessChallenge.API;
-using System;
+using ChessChallenge.API;
 using System.Linq;
-using System.Collections.Generic;
 
-public class MyBot : IChessBot
+public class MyBot3 : IChessBot
 {
   int[] pieceValues = { 0, 100, 300, 300, 500, 900 };
   ulong[][] pieceScoreboards = new ulong[][]{
