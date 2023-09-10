@@ -18,20 +18,32 @@ public class MyBot : IChessBot
   public Move Think(Board board, Timer timer)
   {
     var depth = 0;
+    var bestScore = 0;
+    Move bestMove = Move.NullMove;
 
     while (true)
     {
-      var score = ScoreMove(board, ++depth, -99999, 99999, out Move move);
+      var score = ScoreMove(timer, board, ++depth, -99999, 99999, out Move move);
 
-      if (timer.MillisecondsElapsedThisTurn > 10 || Math.Abs(score) == 99999) 
+      if (Math.Abs(score) == 99999)
       {
-        Console.WriteLine("Depth: " + depth + " Score: " + score + " " + move);
-        return move;
+        bestMove = move;
+        bestScore = score;
+        move = Move.NullMove;
       }
+
+      if (move.IsNull)
+      {
+        Console.WriteLine("Depth: " + depth + " Score: " + bestScore + " " + bestMove);
+        return bestMove;
+      }
+
+      bestScore = score;
+      bestMove = move;
     }
   }
 
-  public int ScoreMove(Board board, int depth, int alpha, int beta, out Move bestMove)
+  public int ScoreMove(Timer timer, Board board, int depth, int alpha, int beta, out Move bestMove)
   {
     bestMove = Move.NullMove;
 
@@ -56,6 +68,12 @@ public class MyBot : IChessBot
     var bestEval = -99999;
     foreach (var move in legalMoves)
     {
+      if (timer.MillisecondsElapsedThisTurn > 100)
+      {
+        bestMove = Move.NullMove;
+        return 0;
+      }
+
       if (alpha >= beta)
       {
         continue;
@@ -63,7 +81,7 @@ public class MyBot : IChessBot
 
       board.MakeMove(move);
 
-      var eval = -ScoreMove(board, depth - 1, -beta, -alpha, out Move _);
+      var eval = -ScoreMove(timer, board, depth - 1, -beta, -alpha, out Move _);
 
       board.UndoMove(move);
 
