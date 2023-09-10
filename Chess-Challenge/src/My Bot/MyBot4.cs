@@ -1,10 +1,10 @@
-﻿using ChessChallenge.API;
+using ChessChallenge.API;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class MyBot : IChessBot
+public class MyBot4 : IChessBot
 {
   int[] pieceValues = { 0, 100, 300, 300, 500, 900 };
   ulong[][] pieceScoreboards = new ulong[][]{
@@ -25,7 +25,6 @@ public class MyBot : IChessBot
 
       if (timer.MillisecondsElapsedThisTurn > 10 || Math.Abs(score) == 99999) 
       {
-        Console.WriteLine("Depth: " + depth + " Score: " + score + " " + move);
         return move;
       }
     }

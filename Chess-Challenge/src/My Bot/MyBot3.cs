@@ -15,7 +15,7 @@ public class MyBot3 : IChessBot
 
   public Move Think(Board board, Timer timer)
   {
-    return ScoreMove(board, 4, -99999, 99999).Item2;
+    return ScoreMove(board, 3, -99999, 99999).Item2;
   }
 
   public (int, Move) ScoreMove(Board board, int depth, int alpha, int beta)
