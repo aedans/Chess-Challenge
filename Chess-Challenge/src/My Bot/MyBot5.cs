@@ -4,10 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class MyBot4 : IChessBot
+public class MyBot5 : IChessBot
 {
   int[] pieceValues = { 0, 100, 300, 300, 500, 900 };
-  ulong[][] pieceScoreboards = new ulong[][]{
+  ulong[][] pieceEvalboards = new ulong[][]{
     new ulong[] { 0x0000000000000000, 0x1223322123344332, 0x3445544345566554, 0x56677665ffffffff },
     new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
     new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
@@ -15,20 +15,22 @@ public class MyBot4 : IChessBot
     new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
   };
 
+  Dictionary<ulong, (int, int, Move)> evaluations = new();
+
   public Move Think(Board board, Timer timer)
   {
     var depth = 0;
-    var bestScore = 0;
+    var bestEval = 0;
     Move bestMove = Move.NullMove;
 
     while (true)
     {
-      var score = ScoreMove(timer, board, ++depth, -99999, 99999, out Move move);
+      var eval = EvalMove(timer, board, ++depth, -99999, 99999, out Move move);
 
-      if (score == 99999)
+      if (eval == 99999)
       {
         bestMove = move;
-        bestScore = score;
+        bestEval = eval;
         move = Move.NullMove;
       }
 
@@ -37,12 +39,12 @@ public class MyBot4 : IChessBot
         return bestMove;
       }
 
-      bestScore = score;
+      bestEval = eval;
       bestMove = move;
     }
   }
 
-  public int ScoreMove(Timer timer, Board board, int depth, int alpha, int beta, out Move bestMove)
+  public int EvalMove(Timer timer, Board board, int depth, int alpha, int beta, out Move bestMove)
   {
     bestMove = Move.NullMove;
 
@@ -58,10 +60,23 @@ public class MyBot4 : IChessBot
 
     if (depth == 0)
     {
-      return PieceScores(board, board.IsWhiteToMove) - PieceScores(board, !board.IsWhiteToMove);
+      return PieceEvals(board, board.IsWhiteToMove) - PieceEvals(board, !board.IsWhiteToMove);
     }
 
     var legalMoves = board.GetLegalMoves().ToList();
+
+    if (evaluations.ContainsKey(board.ZobristKey))
+    {
+      var (evalDepth, eval, move) = evaluations[board.ZobristKey];
+      if (evalDepth >= depth)
+      {
+        bestMove = move;
+        return eval;
+      }
+
+      legalMoves.Insert(0, move);
+    }
+
     bestMove = legalMoves[0];
 
     var bestEval = -99999;
@@ -80,7 +95,7 @@ public class MyBot4 : IChessBot
 
       board.MakeMove(move);
 
-      var eval = -ScoreMove(timer, board, depth - 1, -beta, -alpha, out Move _);
+      var eval = -EvalMove(timer, board, depth - 1, -beta, -alpha, out Move _);
 
       board.UndoMove(move);
 
@@ -93,16 +108,18 @@ public class MyBot4 : IChessBot
       alpha = Math.Max(alpha, bestEval);
     }
 
+    evaluations[board.ZobristKey] = (depth, bestEval, bestMove);
+
     return bestEval;
   }
 
-  public int PieceScores(Board board, bool white)
+  public int PieceEvals(Board board, bool white)
   {
     return new PieceType[] { PieceType.Pawn, PieceType.Knight, PieceType.Bishop, PieceType.Rook, PieceType.Queen }
-      .Sum(type => board.GetPieceList(type, white).Sum(piece => GetPieceScore(piece)));
+      .Sum(type => board.GetPieceList(type, white).Sum(piece => GetPieceEval(piece)));
   }
 
-  public int GetPieceScore(Piece piece)
+  public int GetPieceEval(Piece piece)
   {
     var index = piece.Square.Index;
     if (!piece.IsWhite)
@@ -111,7 +128,7 @@ public class MyBot4 : IChessBot
     }
 
     var offset = 60 - (index % 16) * 4;
-    var value = (pieceScoreboards[(int)piece.PieceType - 1][index / 16] & (0xful << offset)) >> offset;
+    var value = (pieceEvalboards[(int)piece.PieceType - 1][index / 16] & (0xful << offset)) >> offset;
     return (int)(pieceValues[(int)piece.PieceType] * (1 + value * .1));
   }
 }

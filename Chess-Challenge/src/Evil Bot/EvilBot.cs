@@ -8,7 +8,7 @@ namespace ChessChallenge.Example
   {
     public Move Think(Board board, Timer timer)
     {
-      return new MyBot4().Think(board, timer);
+      return new MyBot5().Think(board, timer);
     }
   }
 }
