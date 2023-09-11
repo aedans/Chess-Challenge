@@ -16,11 +16,9 @@ public class MyBot9 : IChessBot
   };
 
   Dictionary<ulong, (int, int, List<Move>)> evaluations = new();
-  int evalNum = 0;
 
   public Move Think(Board board, Timer timer)
   {
-    evalNum = 0;
     var depth = 0;
     var bestEval = 0;
     Move bestMove = Move.NullMove;
