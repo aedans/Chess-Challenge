@@ -6,7 +6,7 @@ namespace ChessChallenge.Example
   // Plays randomly otherwise.
   public class EvilBot : IChessBot
   {
-    IChessBot bot = new MyBot8();
+    IChessBot bot = new MyBot9();
 
     public Move Think(Board board, Timer timer)
     {
