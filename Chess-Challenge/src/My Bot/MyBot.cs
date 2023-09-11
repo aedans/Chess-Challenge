@@ -6,13 +6,13 @@ using System.Linq;
 
 public class MyBot : IChessBot
 {
-  int[] pieceValues = { 0, 100, 300, 300, 500, 900 };
+  int[] pieceValues = { 0, 100, 320, 330, 500, 900 };
   ulong[][] pieceEvalboards = new ulong[][]{
-    new ulong[] { 0x0000000000000000, 0x1223322123344332, 0x3445544345566554, 0x56677665ffffffff },
-    new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
-    new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
-    new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
-    new ulong[] { 0x0123321012344321, 0x2345543234566543, 0x2345543234566543, 0x0123321012344321 },
+    new ulong[] { 0x888888889aa44aa9, 0x97688679888cc888, 0x99adda99aaceecaa, 0xffffffffffffffff, },
+    new ulong[] { 0x0022220004899840, 0x29abba9228bccb82, 0x29bccb9228abba82, 0x0488884000222200, },
+    new ulong[] { 0x4666666469888896, 0x6aaaaaa668aaaa86, 0x699aa996689aa986, 0x6888888646666664, },
+    new ulong[] { 0x8889988878888887, 0x7888888778888887, 0x7888888778888887, 0x9aaaaaa988888888, },
+    new ulong[] { 0x4667766468888986, 0x6899999678999988, 0x7899998768999986, 0x6888888646677664, },
   };
 
   Dictionary<ulong, (int, int, List<Move>)> evaluations = new();
@@ -75,7 +75,7 @@ public class MyBot : IChessBot
         return eval;
       }
 
-      legalMoves.InsertRange(0, moves);
+      legalMoves.InsertRange(0, moves.Where(move => legalMoves.Contains(move)));
     }
 
     bestMove = legalMoves[0];
@@ -124,14 +124,9 @@ public class MyBot : IChessBot
 
   public int GetPieceEval(Piece piece)
   {
-    var index = piece.Square.Index;
-    if (!piece.IsWhite)
-    {
-      index = 63 - index;
-    }
-
-    var offset = 60 - (index % 16) * 4;
-    var value = (pieceEvalboards[(int)piece.PieceType - 1][index / 16] & (0xful << offset)) >> offset;
-    return (int)(pieceValues[(int)piece.PieceType] * (1 + value * .1));
+    var index = piece.IsWhite ? piece.Square.Index : 63 - piece.Square.Index;
+    var offset = 60 - index % 16 * 4;
+    var value = 5 * ((int) ((pieceEvalboards[(int)piece.PieceType - 1][index / 16] & (0xful << offset)) >> offset) - 8);
+    return (int)(pieceValues[(int)piece.PieceType] + value);
   }
 }
