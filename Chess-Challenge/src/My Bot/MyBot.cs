@@ -82,22 +82,13 @@ public class MyBot : IChessBot
     var priorityMoves = legalMoves.Where(move => move.IsCapture || move.IsPromotion);
     var allMoves = goodMoves.Concat(priorityMoves).Concat(legalMoves).ToList();
 
-    bestMove = allMoves[0];
+    bestMove = Move.NullMove;
 
     var analyzedMoves = new HashSet<Move>();
     var bestMoves = new List<Move>() { allMoves[0] };
-    var bestEval = -99999;
+    var bestEval = -100000;
     foreach (var move in allMoves)
     {
-      if (analyzedMoves.Contains(move))
-      {
-        continue;
-      }
-      else
-      {
-        analyzedMoves.Add(move); 
-      }
-
       if (timer.MillisecondsElapsedThisTurn > 100)
       {
         bestMove = Move.NullMove;
@@ -106,7 +97,16 @@ public class MyBot : IChessBot
 
       if (alpha >= beta)
       {
+        break;
+      }
+
+      if (analyzedMoves.Contains(move))
+      {
         continue;
+      }
+      else
+      {
+        analyzedMoves.Add(move); 
       }
 
       board.MakeMove(move);
