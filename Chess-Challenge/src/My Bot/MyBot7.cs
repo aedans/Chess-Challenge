@@ -1,10 +1,10 @@
-﻿using ChessChallenge.API;
+using ChessChallenge.API;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public class MyBot : IChessBot
+public class MyBot7 : IChessBot
 {
   int[] pieceValues = { 0, 100, 320, 330, 500, 900 };
   ulong[][] pieceEvalboards = new ulong[][]{
@@ -36,7 +36,6 @@ public class MyBot : IChessBot
 
       if (move.IsNull)
       {
-        Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove);
         return bestMove;
       }
 
@@ -65,7 +64,6 @@ public class MyBot : IChessBot
     }
 
     var legalMoves = board.GetLegalMoves().ToList();
-    var goodMoves = new List<Move>{};
 
     if (evaluations.ContainsKey(board.ZobristKey))
     {
@@ -76,28 +74,15 @@ public class MyBot : IChessBot
         return eval;
       }
 
-      goodMoves = moves.Where(move => legalMoves.Contains(move)).ToList();
+      legalMoves.InsertRange(0, moves.Where(move => legalMoves.Contains(move)));
     }
 
-    var priorityMoves = legalMoves.Where(move => move.IsCapture || move.IsPromotion);
-    var allMoves = goodMoves.Concat(priorityMoves).Concat(legalMoves).ToList();
+    bestMove = legalMoves[0];
 
-    bestMove = allMoves[0];
-
-    var analyzedMoves = new HashSet<Move>();
-    var bestMoves = new List<Move>() { allMoves[0] };
+    var bestMoves = new List<Move>() { legalMoves[0] };
     var bestEval = -99999;
-    foreach (var move in allMoves)
+    foreach (var move in legalMoves)
     {
-      if (analyzedMoves.Contains(move))
-      {
-        continue;
-      }
-      else
-      {
-        analyzedMoves.Add(move); 
-      }
-
       if (timer.MillisecondsElapsedThisTurn > 100)
       {
         bestMove = Move.NullMove;
@@ -140,7 +125,7 @@ public class MyBot : IChessBot
   {
     var index = piece.IsWhite ? piece.Square.Index : 63 - piece.Square.Index;
     var offset = 60 - index % 16 * 4;
-    var value = 5 * ((int)((pieceEvalboards[(int)piece.PieceType - 1][index / 16] & (0xful << offset)) >> offset) - 8);
+    var value = 5 * ((int) ((pieceEvalboards[(int)piece.PieceType - 1][index / 16] & (0xful << offset)) >> offset) - 8);
     return (int)(pieceValues[(int)piece.PieceType] + value);
   }
 }
