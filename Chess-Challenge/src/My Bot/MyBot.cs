@@ -1,6 +1,5 @@
 ﻿using ChessChallenge.API;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,7 +24,7 @@ public class MyBot : IChessBot
 
     while (true)
     {
-      var eval = EvalMove(depth == 0 ? null : timer, board, ++depth, -99999, 99999, out Move move);
+      var eval = EvalMove(depth == 0 ? null : timer, board, ++depth, -99999, 99999, new List<Move>(), out Move move);
 
       if (eval == 99999)
       {
@@ -45,7 +44,7 @@ public class MyBot : IChessBot
     }
   }
 
-  public int EvalMove(Timer? timer, Board board, int depth, int alpha, int beta, out Move bestMove)
+  public int EvalMove(Timer? timer, Board board, int depth, int alpha, int beta, List<Move> parentKillers, out Move bestMove)
   {
     bestMove = Move.NullMove;
 
@@ -65,7 +64,7 @@ public class MyBot : IChessBot
     var hasCaptures = false;
     foreach (var move in legalMoves)
     {
-      if (move.IsCapture && move.CapturePieceType != PieceType.Pawn) 
+      if (move.IsCapture && move.CapturePieceType != PieceType.Pawn)
       {
         hasCaptures = true;
         break;
@@ -97,6 +96,14 @@ public class MyBot : IChessBot
       }
     }
 
+    foreach (var move in parentKillers)
+    {
+      if (legalMoves.Contains(move))
+      {
+        allMoves.Add(move);
+      }
+    }
+
     foreach (var move in legalMoves)
     {
       if (move.IsPromotion || move.IsCapture)
@@ -116,6 +123,7 @@ public class MyBot : IChessBot
     bestMove = Move.NullMove;
 
     var analyzedMoves = new HashSet<Move>();
+    var childKillers = new List<Move>();
     var bestMoves = new List<Move>() { allMoves[0] };
     var bestEval = -100000;
     foreach (var move in allMoves)
@@ -128,6 +136,7 @@ public class MyBot : IChessBot
 
       if (alpha >= beta)
       {
+        parentKillers.Add(move);
         break;
       }
 
@@ -142,7 +151,7 @@ public class MyBot : IChessBot
 
       board.MakeMove(move);
 
-      var eval = -EvalMove(timer, board, depth - 1, -beta, -alpha, out Move _);
+      var eval = -EvalMove(timer, board, depth - 1, -beta, -alpha, childKillers, out Move _);
 
       board.UndoMove(move);
 
