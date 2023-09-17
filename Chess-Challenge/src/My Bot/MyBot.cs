@@ -14,53 +14,47 @@ public class MyBot : IChessBot
     new ulong[] { 0x4667766468888986, 0x6899999678999988, 0x7899998768999986, 0x6888888646677664, },
   };
 
-  Dictionary<ulong, (int, int, List<Move>)> evaluations = new();
+  Dictionary<ulong, (int, int, List<Move>, List<Move>)> evaluations = new();
 
   public Move Think(Board board, Timer timer)
   {
-    var depth = 0;
+    var depth = 1;
     var bestEval = 0;
     Move bestMove = Move.NullMove;
     var alpha = -99999;
     var beta = 99999;
+    var isTime = false;
 
-    while (true)
+    while (!isTime)
     {
-      var eval = EvalMove(depth == 0 ? null : timer, board, ++depth, alpha, beta, new List<Move>(), out Move move);
+      var eval = EvalMove(depth == 1 ? null : timer, board, depth, alpha, beta, new List<Move>(), ref isTime, out Move move);
 
-      if (eval == 99999)
+      if (move == Move.NullMove)
       {
-        bestMove = move;
+        // if (eval <= alpha) 
+        // {
+        //   alpha = -99999;
+        // }
+        // else if (eval >= beta)
+        // {
+        //   beta = 99999;
+        // }
+      }
+      else
+      {
         bestEval = eval;
-        move = Move.NullMove;
+        bestMove = move;
+        // alpha = eval - 50;
+        // beta = eval + 50;
+        depth++;
       }
-
-      if (move.IsNull)
-      {
-        Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove);
-        return bestMove;
-      }
-
-      // if (eval <= alpha) 
-      // {
-      //   alpha = -99999;
-      // }
-      // else if (eval >= beta)
-      // {
-      //   beta = 99999;
-      // }
-      // else
-      // {
-      //   alpha = eval - 25;
-      //   beta = eval + 25;
-      // }
-
-      bestEval = eval;
-      bestMove = move;
     }
+
+    Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove);
+    return bestMove;
   }
 
-  public int EvalMove(Timer? timer, Board board, int depth, int alpha, int beta, List<Move> parentKillers, out Move bestMove)
+  public int EvalMove(Timer? timer, Board board, int depth, int alpha, int beta, List<Move> parentKillers, ref bool isTime, out Move bestMove)
   {
     bestMove = Move.NullMove;
 
@@ -93,30 +87,39 @@ public class MyBot : IChessBot
     }
 
     var allMoves = new List<Move>();
+    var childKillers = new List<Move>();
 
     if (evaluations.ContainsKey(board.ZobristKey))
     {
-      var (evalDepth, eval, moves) = evaluations[board.ZobristKey];
+      var (evalDepth, eval, moves, killers) = evaluations[board.ZobristKey];
       if (evalDepth >= depth && moves.Count > 0)
       {
         bestMove = moves.First();
         return eval;
       }
 
-      foreach (var move in moves)
+      childKillers.AddRange(killers);
+
+      if (depth > 0) 
+      {
+        foreach (var move in moves)
+        {
+          if (legalMoves.Contains(move))
+          {
+            allMoves.Add(move);
+          }
+        }
+      }
+    }
+
+    if (depth > 0) 
+    {
+      foreach (var move in parentKillers)
       {
         if (legalMoves.Contains(move))
         {
           allMoves.Add(move);
         }
-      }
-    }
-
-    foreach (var move in parentKillers)
-    {
-      if (legalMoves.Contains(move))
-      {
-        allMoves.Add(move);
       }
     }
 
@@ -128,7 +131,7 @@ public class MyBot : IChessBot
       }
     }
 
-    if (depth > 0 || board.IsInCheck())
+    if (depth > 0 || allMoves.Count == 0)
     {
       foreach (var move in legalMoves)
       {
@@ -137,13 +140,13 @@ public class MyBot : IChessBot
     }
 
     bestMove = Move.NullMove;
+    isTime = timer != null && timer.MillisecondsElapsedThisTurn > (timer.MillisecondsRemaining / 50) + timer.IncrementMilliseconds;
 
     var analyzedMoves = new HashSet<Move>();
-    var childKillers = new List<Move>();
     var bestMoves = new List<Move>() { allMoves[0] };
     foreach (var move in allMoves)
     {
-      if (timer != null && timer.MillisecondsElapsedThisTurn > (timer.MillisecondsRemaining / 50) + timer.IncrementMilliseconds)
+      if (isTime) 
       {
         bestMove = Move.NullMove;
         return 0;
@@ -151,7 +154,6 @@ public class MyBot : IChessBot
 
       if (alpha >= beta)
       {
-        parentKillers.Add(move);
         break;
       }
 
@@ -166,7 +168,7 @@ public class MyBot : IChessBot
 
       board.MakeMove(move);
 
-      var eval = -EvalMove(timer, board, depth - 1, -beta, -alpha, childKillers, out Move _);
+      var eval = -EvalMove(timer, board, depth - 1, -beta, -alpha, childKillers, ref isTime, out Move _);
 
       board.UndoMove(move);
 
@@ -178,7 +180,7 @@ public class MyBot : IChessBot
       }
     }
 
-    evaluations[board.ZobristKey] = (depth, alpha, bestMoves);
+    evaluations[board.ZobristKey] = (depth, alpha, bestMoves, childKillers);
 
     return alpha;
   }

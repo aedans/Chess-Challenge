@@ -88,7 +88,7 @@ public class MyBot8 : IChessBot
     var bestEval = -100000;
     foreach (var move in allMoves)
     {
-      if (timer.MillisecondsElapsedThisTurn > 100)
+      if (timer.MillisecondsElapsedThisTurn > (timer.MillisecondsRemaining / 50) + timer.IncrementMilliseconds)
       {
         bestMove = Move.NullMove;
         return 0;
