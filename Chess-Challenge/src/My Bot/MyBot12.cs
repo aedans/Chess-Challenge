@@ -1,9 +1,9 @@
-﻿using ChessChallenge.API;
+using ChessChallenge.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public class MyBot : IChessBot
+public class MyBot12 : IChessBot
 {
   int[] pieceValues = { 0, 100, 320, 330, 500, 900 };
   ulong[][] pieceEvalboards = new ulong[][]{
@@ -54,7 +54,6 @@ public class MyBot : IChessBot
       }
     }
 
-    Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove);
     return bestMove;
   }
 
