@@ -24,12 +24,13 @@ public class MyBot : IChessBot
     var alphaOffset = 99999;
     var betaOffset = 99999;
     var isTime = false;
+    var timeAlloc = 100;
 
     while (!isTime)
     {
       var alpha = bestEval - alphaOffset;
       var beta = bestEval + betaOffset;
-      var eval = EvalMove(depth == 1 ? null : timer, board, depth, alpha, beta, new List<Move>(), ref isTime, out Move move);
+      var eval = EvalMove(depth == 1 ? null : timer, board, depth, alpha, beta, new List<Move>(), timeAlloc, ref isTime, out Move move);
 
       if (Math.Abs(eval) == 99999)
       {
@@ -41,10 +42,12 @@ public class MyBot : IChessBot
       if (eval <= alpha)
       {
         alphaOffset *= 4;
+        timeAlloc = (int) (timeAlloc * .9);
       }
       else if (eval >= beta)
       {
         betaOffset *= 4;
+        timeAlloc = (int) (timeAlloc * .9);
       }
       else if (move != Move.NullMove)
       {
@@ -56,11 +59,11 @@ public class MyBot : IChessBot
       }
     }
 
-    Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove);
+    Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove + " Time: " + timer.MillisecondsElapsedThisTurn);
     return bestMove;
   }
 
-  public int EvalMove(Timer? timer, Board board, int depth, int alpha, int beta, List<Move> parentKillers, ref bool isTime, out Move bestMove)
+  public int EvalMove(Timer? timer, Board board, int depth, int alpha, int beta, List<Move> parentKillers, int timeAlloc, ref bool isTime, out Move bestMove)
   {
     bestMove = Move.NullMove;
 
@@ -162,7 +165,7 @@ public class MyBot : IChessBot
     }
 
     bestMove = Move.NullMove;
-    isTime = timer != null && timer.MillisecondsElapsedThisTurn > (timer.MillisecondsRemaining / 50) + timer.IncrementMilliseconds;
+    isTime = timer != null && timer.MillisecondsElapsedThisTurn > (timer.MillisecondsRemaining / (timeAlloc + 3)) + timer.IncrementMilliseconds;
 
     var analyzedMoves = new HashSet<Move>();
     var bestMoves = new List<Move>() { };
@@ -186,7 +189,7 @@ public class MyBot : IChessBot
 
       board.MakeMove(move);
 
-      var eval = -EvalMove(timer, board, depth - 1, -beta, -alpha, childKillers, ref isTime, out Move _);
+      var eval = -EvalMove(timer, board, depth - 1, -beta, -alpha, childKillers, timeAlloc, ref isTime, out Move _);
 
       board.UndoMove(move);
 
