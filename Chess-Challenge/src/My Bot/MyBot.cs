@@ -29,23 +29,10 @@ public class MyBot : IChessBot
     {
       var eval = EvalMove(depth == 1 ? null : timer, board, depth, alpha, beta, new List<Move>(), ref isTime, out Move move);
 
-      if (move == Move.NullMove)
-      {
-        // if (eval <= alpha) 
-        // {
-        //   alpha = -99999;
-        // }
-        // else if (eval >= beta)
-        // {
-        //   beta = 99999;
-        // }
-      }
-      else
+      if (move != Move.NullMove)
       {
         bestEval = eval;
         bestMove = move;
-        // alpha = eval - 50;
-        // beta = eval + 50;
         depth++;
       }
     }
