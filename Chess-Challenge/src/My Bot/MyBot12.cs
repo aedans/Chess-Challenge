@@ -21,12 +21,14 @@ public class MyBot12 : IChessBot
     var depth = 1;
     var bestEval = 0;
     Move bestMove = Move.NullMove;
-    var alpha = -99999;
-    var beta = 99999;
+    var alphaOffset = 99999;
+    var betaOffset = 99999;
     var isTime = false;
 
     while (!isTime)
     {
+      var alpha = bestEval - alphaOffset;
+      var beta = bestEval + betaOffset;
       var eval = EvalMove(depth == 1 ? null : timer, board, depth, alpha, beta, new List<Move>(), ref isTime, out Move move);
 
       if (Math.Abs(eval) == 99999)
@@ -38,19 +40,19 @@ public class MyBot12 : IChessBot
 
       if (eval <= alpha)
       {
-        alpha = -99999;
+        alphaOffset *= 4;
       }
       else if (eval >= beta)
       {
-        beta = 99999;
+        betaOffset *= 4;
       }
       else if (move != Move.NullMove)
       {
         bestEval = eval;
         bestMove = move;
-        alpha = eval - 25;
-        beta = eval + 25;
         depth++;
+        alphaOffset = 25;
+        betaOffset = 25;
       }
     }
 
