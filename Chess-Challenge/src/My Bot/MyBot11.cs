@@ -37,7 +37,6 @@ public class MyBot11 : IChessBot
       }
     }
 
-    Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove);
     return bestMove;
   }
 
