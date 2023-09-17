@@ -164,6 +164,11 @@ public class MyBot : IChessBot
         bestMove = move;
         bestMoves.Insert(0, move);
         alpha = eval;
+
+        if (eval >= beta)
+        {
+          parentKillers.Add(move);
+        }
       }
     }
 
