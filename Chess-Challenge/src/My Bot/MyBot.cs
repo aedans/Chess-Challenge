@@ -181,6 +181,6 @@ public class MyBot : IChessBot
     var index = piece.IsWhite ? piece.Square.Index : 63 - piece.Square.Index;
     var offset = 60 - index % 16 * 4;
     var value = 5 * ((int)((pieceEvalboards[(int)piece.PieceType - 1][index / 16] & (0xful << offset)) >> offset) - 8);
-    return (int)(pieceValues[(int)piece.PieceType] + value);
+    return pieceValues[(int)piece.PieceType] + value;
   }
 }
