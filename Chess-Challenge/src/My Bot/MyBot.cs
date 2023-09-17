@@ -29,7 +29,7 @@ public class MyBot : IChessBot
     {
       var eval = EvalMove(depth == 1 ? null : timer, board, depth, alpha, beta, new List<Move>(), ref isTime, out Move move);
 
-      if (eval == 99999)
+      if (Math.Abs(eval) == 99999)
       {
         bestEval = eval;
         bestMove = move;
