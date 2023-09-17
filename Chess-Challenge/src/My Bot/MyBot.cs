@@ -21,10 +21,12 @@ public class MyBot : IChessBot
     var depth = 0;
     var bestEval = 0;
     Move bestMove = Move.NullMove;
+    var alpha = -99999;
+    var beta = 99999;
 
     while (true)
     {
-      var eval = EvalMove(depth == 0 ? null : timer, board, ++depth, -99999, 99999, new List<Move>(), out Move move);
+      var eval = EvalMove(depth == 0 ? null : timer, board, ++depth, alpha, beta, new List<Move>(), out Move move);
 
       if (eval == 99999)
       {
@@ -38,6 +40,20 @@ public class MyBot : IChessBot
         Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove);
         return bestMove;
       }
+
+      // if (eval <= alpha) 
+      // {
+      //   alpha = -99999;
+      // }
+      // else if (eval >= beta)
+      // {
+      //   beta = 99999;
+      // }
+      // else
+      // {
+      //   alpha = eval - 25;
+      //   beta = eval + 25;
+      // }
 
       bestEval = eval;
       bestMove = move;
@@ -125,7 +141,6 @@ public class MyBot : IChessBot
     var analyzedMoves = new HashSet<Move>();
     var childKillers = new List<Move>();
     var bestMoves = new List<Move>() { allMoves[0] };
-    var bestEval = -100000;
     foreach (var move in allMoves)
     {
       if (timer != null && timer.MillisecondsElapsedThisTurn > (timer.MillisecondsRemaining / 50) + timer.IncrementMilliseconds)
@@ -155,19 +170,17 @@ public class MyBot : IChessBot
 
       board.UndoMove(move);
 
-      if (eval > bestEval)
+      if (eval > alpha)
       {
-        bestEval = eval;
         bestMove = move;
         bestMoves.Insert(0, move);
+        alpha = eval;
       }
-
-      alpha = Math.Max(alpha, bestEval);
     }
 
-    evaluations[board.ZobristKey] = (depth, bestEval, bestMoves);
+    evaluations[board.ZobristKey] = (depth, alpha, bestMoves);
 
-    return bestEval;
+    return alpha;
   }
 
   public int PieceEvals(Board board, bool white)
