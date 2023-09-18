@@ -1,4 +1,4 @@
-﻿using ChessChallenge.API;
+using ChessChallenge.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +33,7 @@ using System.Linq;
 // future. Hopefully James does well.
 //
 // - aedans
-public class MyBot : IChessBot
+public class MyBot13 : IChessBot
 {
   // Piece values, taken from the simplified evaluation function, stored as 
   // centipawns for each piece. King is omitted.
@@ -116,7 +116,6 @@ public class MyBot : IChessBot
       }
     }
 
-    Console.WriteLine("Depth: " + depth + " Eval: " + bestEval + " " + bestMove + " Time: " + timer.MillisecondsElapsedThisTurn);
     return bestMove;
   }
 
